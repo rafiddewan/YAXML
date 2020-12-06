@@ -12,7 +12,8 @@ Required libraires: lxml, yaml, sys and optparse
 @author: Rafid Dewan
 @company: Ciena Corporation
 
-"""
+"""   
+
 import yaml
 from sys import stdin, stdout, stderr, exit
 from lxml import etree
@@ -35,7 +36,7 @@ def main():
   parser = OptionParser(usage="%prog [options] [filename]")
   parser.add_option("-y", action="store_true", dest="parseToYaml",
       help="This option is for you to specify if you want to convert an existing xml template file to pec yaml template")
-  parser.add_option("-x", action="store_true", dest="parseToYaml",
+  parser.add_option("-x", action="store_false", dest="parseToYaml",
       help="This option is for you to specify if you want to convert an existing yaml template file to pec xml template")
   parser.add_option("-p", dest="pec", default=None,
       help="run the file with the associated pec name for the file")
@@ -51,7 +52,7 @@ def main():
   input = open(args[0], "r") if any(args) and args[0] != "-" else stdin
 
   #Running the conversion from YAML to XML
-  if options.parseToYaml:
+  if not options.parseToYaml:
     yamlFile = yaml.load(input.read(), Loader=yaml.FullLoader)
     items = yamlFile.items()
 
@@ -66,9 +67,24 @@ def main():
 
     # multiple keys generated at the root level so need to iterate through each of them # since it's not tradiational xml
     for key, setItems in items:
-      currRoot = toYAML.to_elem(key, setItems)
+      currRoot = toXML.to_elem(key, setItems)
       file.write(etree.tostring(currRoot, pretty_print=True).decode("utf-8"))
     file.close()
+  else:
+    with open(args[0], "r") as fobj:
+      xml = fobj.read()
+    parser = etree.XMLParser(remove_blank_text=True)
+    thisRoot = etree.XML(xml, parser)
+    print(thisRoot)
+        #overwrites file for clean state
+    if options.pec:
+      output = open(f"{options.pec}.yml", "w") 
+    else: stdout
+    output.close()
+
+    #appends multiple roots into the same xml file
+    file = open(f"{options.pec}.yml", "a+")
+
 
 if __name__ == "__main__":
   main()
