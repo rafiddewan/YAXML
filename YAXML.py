@@ -17,7 +17,9 @@ import yaml
 from sys import stdin, stdout, stderr, exit
 from lxml import etree
 from optparse import OptionParser
+import toYAML
 import toXML
+
 
 #  Retrieves the URI for the XML and YAML conversions
 def getPrefix():
@@ -64,7 +66,7 @@ def main():
 
     # multiple keys generated at the root level so need to iterate through each of them # since it's not tradiational xml
     for key, setItems in items:
-      currRoot = toXML.to_elem(key, setItems)
+      currRoot = toYAML.to_elem(key, setItems)
       file.write(etree.tostring(currRoot, pretty_print=True).decode("utf-8"))
     file.close()
 
