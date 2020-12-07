@@ -13,7 +13,6 @@ Required libraires: lxml, yaml, sys and optparse
 @company: Ciena Corporation
 
 """   
-
 import yaml
 from sys import stdin, stdout, stderr, exit
 from lxml import etree
@@ -34,9 +33,9 @@ def main():
   Main function for YAXML
   """
   parser = OptionParser(usage="%prog [options] [filename]")
-  parser.add_option("-y", action="store_true", dest="parseToYaml",
-      help="This option is for you to specify if you want to convert an existing xml template file to pec yaml template")
   parser.add_option("-x", action="store_false", dest="parseToYaml",
+      help="This option is for you to specify if you want to convert an existing xml template file to pec yaml template")
+  parser.add_option("-y", action="store_true", dest="parseToYaml",
       help="This option is for you to specify if you want to convert an existing yaml template file to pec xml template")
   parser.add_option("-p", dest="pec", default=None,
       help="run the file with the associated pec name for the file")
@@ -70,13 +69,38 @@ def main():
       currRoot = toXML.to_elem(key, setItems)
       file.write(etree.tostring(currRoot, pretty_print=True).decode("utf-8"))
     file.close()
+
+    newFile = open(f"{options.pec}.xml", "r")
+    xml = newFile.readlines()
+    removeWhitespace = False
+    removeStrings = ['<temp>', '</temp>']
+    val = 0
+    for i in range(len(xml) - 1):
+      if(xml[i].find(removeStrings[1]) > -1 and i < len(xml)):
+        xml.pop(i)
+        removeWhitespace = False
+      if(removeWhitespace == True and i < len(xml)):
+        string = xml[i]
+        xml[i] = string[2:]
+      if(i < len(xml)):
+        if(xml[i].find(removeStrings[0]) > -1):
+          xml.pop(i)
+          removeWhitespace = True
+          string = xml[i]
+          xml[i] = string[2:]
+      else: 
+        break
+    newFile.close()
+    newFile = open(f"{options.pec}.xml", "w")
+    newFile.writelines(xml)
+    newFile.close()
   else:
     with open(args[0], "r") as fobj:
       xml = fobj.read()
     parser = etree.XMLParser(remove_blank_text=True)
     thisRoot = etree.XML(xml, parser)
     print(thisRoot)
-        #overwrites file for clean state
+    #overwrites file for clean state
     if options.pec:
       output = open(f"{options.pec}.yml", "w") 
     else: stdout

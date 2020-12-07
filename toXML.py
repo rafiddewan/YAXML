@@ -31,6 +31,13 @@ def createElem(key, namespace=None):
     else:
         return etree.Element(key, xmlns=namespace)
 
+#Maps the list to series of elements
+def list_to_elem(key, input):
+    root = createElem('temp')
+    for val in input:
+        root.append(to_elem(key, val))
+    return root
+
 #Maps the dictionary to an element and iterates over the values
 def dict_to_elem(key, input):
     namespace = getNameSpace(input)
@@ -41,6 +48,8 @@ def dict_to_elem(key, input):
 
 #Checks if its a dictionary element to add the element as a composite node, if not then set it as a leaf node
 def to_elem(key, input):
+    if isinstance(input, list):
+        return list_to_elem(key, input)
     if isinstance(input, dict):
         return dict_to_elem(key, input)
     else:
